@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import { passwordStrength, fMsg, fError, encode } from "../utils/libby.js";
+import { passwordStrength, fMsg, fError, encode, decode ,generateTokenAndSetCookie} from "../utils/libby.js";
 
 export const register = async (req, res) => {
   try {
@@ -38,6 +38,19 @@ export const login = async (req, res) => {
 
   if (!email || !password) return fError(res, "All fields are required", 400);
 
-  const user = await User.findOne({ email });
-  if (!user) return fError(res, "User not found", 400);
+  const currentUser = await User.findOne({ email });
+  if (!currentUser) return fError(res, "User not found", 400);
+
+  const checkPassword = decode(password, currentUser.password);
+  if (!checkPassword) return fError(res, "Incorrect Email or Password", 400);
+
+  const token = generateTokenAndSetCookie(res, currentUser._id);
+  return fMsg(res, "Login successful", {user:currentUser,token:token}, 200);
 };
+
+
+export const logout = async (req, res) => {
+  res.clearCookie('jwt');
+  return fMsg(res, "Logout successful", null, 200);
+};
+
