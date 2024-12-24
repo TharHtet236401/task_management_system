@@ -54,3 +54,7 @@ export const logout = async (req, res) => {
   return fMsg(res, "Logout successful", null, 200);
 };
 
+
+export const dummyRateLimit = async (req, res) => {
+  return fMsg(res, "Dummy rate limit test", null, 200);
+};

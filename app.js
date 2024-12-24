@@ -19,7 +19,8 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later."
 });
 
-app.use("/api/user", limiter, userRoute);
+app.use(limiter);
+app.use("/api/user", userRoute);
 app.listen(PORT, () => {
   connectMongoDB();
   console.log(`Server is running on port ${PORT}`);
