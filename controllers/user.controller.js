@@ -1,10 +1,9 @@
 import User from "../models/user.model.js";
-import { passwordStrength, fMsg, fError } from "../utils/libby.js";
+import { passwordStrength, fMsg, fError, encode } from "../utils/libby.js";
 
 export const register = async (req, res) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
-    console.log(req.body);
 
     // Validate required fields
     if (!username || !email || !password || !confirmPassword) {
@@ -20,15 +19,25 @@ export const register = async (req, res) => {
       return fError(res, "Password is not strong enough", 400);
     }
 
-    console.log(password == confirmPassword);
     if (password !== confirmPassword) {
       return fError(res, "Password and confirm password do not match", 400);
     }
 
-    const newUser = new User({ username, email, password });
+    const hashedPassword = encode(password);
+
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
     return fMsg(res, "User created successfully", newUser, 201);
   } catch (error) {
     return fError(res, error.message, 500);
   }
+};
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) return fError(res, "All fields are required", 400);
+
+  const user = await User.findOne({ email });
+  if (!user) return fError(res, "User not found", 400);
 };
