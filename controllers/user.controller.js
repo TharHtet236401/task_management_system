@@ -1,5 +1,12 @@
 import User from "../models/user.model.js";
-import { passwordStrength, fMsg, fError, encode, decode ,generateTokenAndSetCookie} from "../utils/libby.js";
+import {
+  passwordStrength,
+  fMsg,
+  fError,
+  encode,
+  decode,
+  generateTokenAndSetCookie,
+} from "../utils/libby.js";
 
 export const register = async (req, res) => {
   try {
@@ -10,9 +17,17 @@ export const register = async (req, res) => {
       return fError(res, "All fields are requireddd", 400);
     }
 
+    if (
+      typeof username !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      typeof confirmPassword !== "string"
+    )
+      return fError(res, "Invalid fields", 400);
+
     // Check if user already exists first to avoid unnecessary password checks
 
-    const user = await User.findOne({ email:{$eq:email} });
+    const user = await User.findOne({ email: { $eq: email } });
     if (user) return fError(res, "User already exists", 400);
 
     // Validate password
@@ -39,22 +54,29 @@ export const login = async (req, res) => {
 
   if (!email || !password) return fError(res, "All fields are required", 400);
 
-  const currentUser = await User.findOne({ email:{$eq:email} });
+  // Validate email and password for security
+  if (typeof email !== "string" || typeof password !== "string")
+    return fError(res, "Invalid email or password", 400);
+
+  const currentUser = await User.findOne({ email: { $eq: email } });
   if (!currentUser) return fError(res, "User not found", 400);
 
   const checkPassword = decode(password, currentUser.password);
   if (!checkPassword) return fError(res, "Incorrect Email or Password", 400);
 
   const token = generateTokenAndSetCookie(res, currentUser._id);
-  return fMsg(res, "Login successful", {user:currentUser,token:token}, 200);
+  return fMsg(
+    res,
+    "Login successful",
+    { user: currentUser, token: token },
+    200
+  );
 };
-
 
 export const logout = async (req, res) => {
-  res.clearCookie('jwt');
+  res.clearCookie("jwt");
   return fMsg(res, "Logout successful", null, 200);
 };
-
 
 export const dummyRateLimit = async (req, res) => {
   return fMsg(res, "Dummy rate limit test", null, 200);
