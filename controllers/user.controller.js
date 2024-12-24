@@ -11,7 +11,8 @@ export const register = async (req, res) => {
     }
 
     // Check if user already exists first to avoid unnecessary password checks
-    const user = await User.findOne({ email });
+
+    const user = await User.findOne({ email:{$eq:email} });
     if (user) return fError(res, "User already exists", 400);
 
     // Validate password
@@ -38,7 +39,7 @@ export const login = async (req, res) => {
 
   if (!email || !password) return fError(res, "All fields are required", 400);
 
-  const currentUser = await User.findOne({ email });
+  const currentUser = await User.findOne({ email:{$eq:email} });
   if (!currentUser) return fError(res, "User not found", 400);
 
   const checkPassword = decode(password, currentUser.password);
