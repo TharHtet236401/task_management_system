@@ -7,24 +7,12 @@ export const createTask = async (req, res) => {
     const { title, description, status, priority, category, deadline } =
       req.body;
 
-    if (
-      !title ||
-      !description ||
-      !status ||
-      !priority ||
-      !category ||
-      !deadline
-    ) {
-      return fError(res, "All fields are required", 400);
+    if (!title) {
+      return fError(res, "At least title is required", 400);
     }
 
     if (
-      typeof title !== "string" ||
-      typeof description !== "string" ||
-      typeof status !== "string" ||
-      typeof priority !== "string" ||
-      typeof category !== "string" ||
-      typeof deadline !== "string"
+      typeof title !== "string" 
     ) {
       return fError(res, "Invalid data type", 400);
     }
