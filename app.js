@@ -6,6 +6,7 @@ import connectMongoDB from "./config/connectMongoDB.js";
 dotenv.config();
 
 import userRoute from "./routes/user.route.js";
+import taskRoute from "./routes/task.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,11 +17,17 @@ app.use(express.json());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later."
+  message: "Too many requests from this IP, please try again later.",
 });
 
 app.use(limiter);
 app.use("/api/user", userRoute);
+app.use("/api/task", taskRoute);
+
+app.get("*", (req, res) => {
+  res.status(404).send("Route Not Found");
+});
+
 app.listen(PORT, () => {
   connectMongoDB();
   console.log(`Server is running on port ${PORT}`);

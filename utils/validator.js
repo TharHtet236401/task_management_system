@@ -27,15 +27,14 @@ export const validateBody = (schema) => {
 export let validateToken = () => {
   return async (req, res, next) => {
     if (!req.headers.authorization) {
-      return next(new Error("Unauthorized"));
+      return fError(res, "Unauthorized", null, 401);
     }
 
     let token = req.headers.authorization.split(" ")[1];
+    console.log(token);
     try {
       const tokenUser = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = tokenUser.data;
-      console.log(req.user);
-
+      req.user = tokenUser.id;
       next();
     } catch (error) {
       return next(new Error("Invalid token"));
