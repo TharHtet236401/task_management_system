@@ -49,3 +49,17 @@ export const createTask = async (req, res) => {
     return fError(res, error.message, 500);
   }
 };
+
+export const getTasks = async (req, res) => {
+  try {
+    const currentUser = await User.findOne({ _id: { $eq: req.user } });
+    if (!currentUser) {
+      return fError(res, "User not found", 404);
+    }
+    const tasks = await Task.find({ user_id: currentUser._id });
+    return fMsg(res, "Tasks fetched successfully", tasks, 200);
+  } catch (error) {
+    return fError(res, error.message, 500);
+  }
+};
+
