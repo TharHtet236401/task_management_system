@@ -1,11 +1,9 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import path from "path"
+import path from "path";
 
 dotenv.config();
 import { fError, fMsg } from "./libby.js";
-
-
 
 //validate the body with schema
 export const validateBody = (schema) => {
@@ -32,7 +30,6 @@ export let validateToken = () => {
     }
 
     let token = req.headers.authorization.split(" ")[1];
-    console.log(token);
     try {
       const tokenUser = jwt.verify(token, process.env.JWT_SECRET);
       req.user = tokenUser.id;
@@ -43,3 +40,16 @@ export let validateToken = () => {
   };
 };
 
+//validate the params with schema
+export const validParams = (schema, name) => {
+  return (req, res, next) => {
+    let obj = {};
+    obj[`${name}`] = req.params[name];
+    let result = schema.validate(obj);
+
+    if (result.error) {
+      return fError(res, result.error.details[0].message, 400);
+    }
+    return next();
+  };
+};

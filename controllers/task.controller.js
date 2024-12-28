@@ -1,6 +1,7 @@
 import Task from "../models/task.model.js";
 import User from "../models/user.model.js";
 import { fError, fMsg } from "../utils/libby.js";
+import mongoose from "mongoose";
 
 export const createTask = async (req, res) => {
   try {
@@ -11,9 +12,7 @@ export const createTask = async (req, res) => {
       return fError(res, "At least title is required", 400);
     }
 
-    if (
-      typeof title !== "string" 
-    ) {
+    if (typeof title !== "string") {
       return fError(res, "Invalid data type", 400);
     }
 
@@ -53,8 +52,11 @@ export const getTasks = async (req, res) => {
 
 export const getTask = async (req, res) => {
   try {
-    console.log(req.params.id);
-    const task = await Task.findOne({ _id: { $eq: req.params.id } });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return fError(res, "Invalid task ID format", 400);
+    }
+
+    const task = await Task.findOne({ _id: req.params.id });
     if (!task) {
       return fError(res, "Task not found", 404);
     }
@@ -64,17 +66,44 @@ export const getTask = async (req, res) => {
   }
 };
 
-
 export const updateTask = async (req, res) => {
   try {
-    if(!req.params.id){
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return fError(res, "Invalid task ID format", 400);
+    }
+    if (!req.params.id) {
       return fError(res, "Task id is required", 400);
     }
-    const { title, description, status, priority, category, deadline } = req.body;
-    if (!title && !description && !status && !priority && !category && !deadline) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return fError(res, "Invalid task ID format", 400);
+    }
+    const { title, description, status, priority, category, deadline } =
+      req.body;
+
+    if (
+      typeof title !== "string" ||
+      typeof description !== "string" ||
+      typeof status !== "string" ||
+      typeof priority !== "string" ||
+      typeof category !== "string" ||
+      typeof deadline !== "string"
+    ) {
+      return fError(res, "Invalid data type", 400);
+    }
+    if (
+      !title &&
+      !description &&
+      !status &&
+      !priority &&
+      !category &&
+      !deadline
+    ) {
       return fError(res, "At least one field is required", 400);
     }
-    const editTask = await Task.findOne({ _id: { $eq: req.params.id }, user_id: { $eq: req.user } });
+    const editTask = await Task.findOne({
+      _id: { $eq: req.params.id },
+      user_id: { $eq: req.user },
+    });
     if (!editTask) {
       return fError(res, "Task not found", 404);
     }
@@ -84,9 +113,11 @@ export const updateTask = async (req, res) => {
       status: status || editTask.status,
       priority: priority || editTask.priority,
       category: category || editTask.category,
-      deadline: deadline || editTask.deadline
-    }
-    const task = await Task.findOneAndUpdate({ _id: req.params.id }, newTask, { new: true });
+      deadline: deadline || editTask.deadline,
+    };
+    const task = await Task.findOneAndUpdate({ _id: req.params.id }, newTask, {
+      new: true,
+    });
     return fMsg(res, "Task updated successfully", task, 200);
   } catch (error) {
     return fError(res, error.message, 500);
@@ -95,10 +126,13 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
   try {
-    if(!req.params.id){
+    if (!req.params.id) {
       return fError(res, "Task id is required", 400);
     }
-    const task = await Task.findOneAndDelete({ _id: { $eq: req.params.id }, user_id: { $eq: req.user } });
+    const task = await Task.findOneAndDelete({
+      _id: { $eq: req.params.id },
+      user_id: { $eq: req.user },
+    });
     if (!task) {
       return fError(res, "Task not found", 404);
     }
