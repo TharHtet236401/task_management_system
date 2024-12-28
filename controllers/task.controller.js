@@ -78,8 +78,15 @@ export const updateTask = async (req, res) => {
     if (!editTask) {
       return fError(res, "Task not found", 404);
     }
-
-    const task = await Task.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
+    const newTask = {
+      title: title || editTask.title,
+      description: description || editTask.description,
+      status: status || editTask.status,
+      priority: priority || editTask.priority,
+      category: category || editTask.category,
+      deadline: deadline || editTask.deadline
+    }
+    const task = await Task.findOneAndUpdate({ _id: req.params.id }, newTask, { new: true });
     return fMsg(res, "Task updated successfully", task, 200);
   } catch (error) {
     return fError(res, error.message, 500);
