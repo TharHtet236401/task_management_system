@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path"
 
 dotenv.config();
+import { fError, fMsg } from "./libby.js";
 
 
 
@@ -27,7 +28,7 @@ export const validateBody = (schema) => {
 export let validateToken = () => {
   return async (req, res, next) => {
     if (!req.headers.authorization) {
-      return fError(res, "Unauthorized", null, 401);
+      return fError(res, "Unauthorized", 401);
     }
 
     let token = req.headers.authorization.split(" ")[1];

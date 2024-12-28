@@ -51,3 +51,15 @@ export const getTasks = async (req, res) => {
   }
 };
 
+export const getTask = async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const task = await Task.findOne({ _id: { $eq: req.params.id } });
+    if (!task) {
+      return fError(res, "Task not found", 404);
+    }
+    return fMsg(res, "Task fetched successfully", task, 200);
+  } catch (error) {
+    return fError(res, error.message, 500);
+  }
+};
