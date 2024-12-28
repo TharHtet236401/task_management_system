@@ -74,13 +74,28 @@ export const updateTask = async (req, res) => {
     if (!title && !description && !status && !priority && !category && !deadline) {
       return fError(res, "At least one field is required", 400);
     }
-    const editTask = await Task.findOne({ _id: { $eq: req.params.id } });
+    const editTask = await Task.findOne({ _id: { $eq: req.params.id }, user_id: { $eq: req.user } });
     if (!editTask) {
       return fError(res, "Task not found", 404);
     }
 
     const task = await Task.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
     return fMsg(res, "Task updated successfully", task, 200);
+  } catch (error) {
+    return fError(res, error.message, 500);
+  }
+};
+
+export const deleteTask = async (req, res) => {
+  try {
+    if(!req.params.id){
+      return fError(res, "Task id is required", 400);
+    }
+    const task = await Task.findOneAndDelete({ _id: { $eq: req.params.id }, user_id: { $eq: req.user } });
+    if (!task) {
+      return fError(res, "Task not found", 404);
+    }
+    return fMsg(res, "Task deleted successfully", task, 200);
   } catch (error) {
     return fError(res, error.message, 500);
   }
