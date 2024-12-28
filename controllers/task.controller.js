@@ -63,3 +63,25 @@ export const getTask = async (req, res) => {
     return fError(res, error.message, 500);
   }
 };
+
+
+export const updateTask = async (req, res) => {
+  try {
+    if(!req.params.id){
+      return fError(res, "Task id is required", 400);
+    }
+    const { title, description, status, priority, category, deadline } = req.body;
+    if (!title && !description && !status && !priority && !category && !deadline) {
+      return fError(res, "At least one field is required", 400);
+    }
+    const editTask = await Task.findOne({ _id: { $eq: req.params.id } });
+    if (!editTask) {
+      return fError(res, "Task not found", 404);
+    }
+
+    const task = await Task.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
+    return fMsg(res, "Task updated successfully", task, 200);
+  } catch (error) {
+    return fError(res, error.message, 500);
+  }
+};
