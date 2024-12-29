@@ -10,7 +10,7 @@ const generateRandomTask = () => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + Math.floor(Math.random() * 30));
 
-  return {
+  const result = {
     title: `Task ${Math.floor(Math.random() * 1000)}`,
     description: `This is a randomly generated task description ${Math.random().toString(36).substring(7)}`,
     status: statuses[Math.floor(Math.random() * statuses.length)],
@@ -18,11 +18,14 @@ const generateRandomTask = () => {
     category: taskCategories[Math.floor(Math.random() * taskCategories.length)],
     deadline: futureDate.toISOString()
   };
+  const JSONresult = JSON.stringify(result, null, 2);
+  return JSONresult;
 };
+ 
 
 const task = generateRandomTask();
 
-console.log(JSON.stringify(task, null, 2));
+console.log(task);
 
 
 // Usage example:
