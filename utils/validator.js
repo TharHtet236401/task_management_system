@@ -33,6 +33,7 @@ export let validateToken = () => {
     try {
       const tokenUser = jwt.verify(token, process.env.JWT_SECRET);
       req.user = tokenUser.id;
+      console.log("From token", req.user);
       next();
     } catch (error) {
       return next(new Error("Invalid token"));

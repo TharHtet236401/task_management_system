@@ -7,6 +7,7 @@ dotenv.config();
 
 import userRoute from "./routes/user.route.js";
 import taskRoute from "./routes/task.route.js";
+import catRoute from "./routes/cat.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,8 +22,9 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use("/api/user", userRoute);
-app.use("/api/task", taskRoute);
+app.use("/api/users", userRoute);
+app.use("/api/tasks", taskRoute);
+app.use("/api/cats", catRoute);
 
 app.get("*", (req, res) => {
   res.status(404).send("Route Not Found");
