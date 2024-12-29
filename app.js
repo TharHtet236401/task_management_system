@@ -30,6 +30,24 @@ app.get("*", (req, res) => {
   res.status(404).send("Route Not Found");
 });
 
+app.use((err, req, res, next) => {
+  try {
+    err.status = err.status || 500;
+    err.message = err.message || "Internal Server Error";
+    
+    res.status(err.status).json({
+      con: false,
+      msg: err.message,
+    });
+  } catch (error) {
+    res.status(500).json({
+      con: false, 
+      msg: "Error in error handler"
+    });
+  }
+});
+
+
 app.listen(PORT, () => {
   connectMongoDB();
   console.log(`Server is running on port ${PORT}`);

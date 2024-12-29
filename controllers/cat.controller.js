@@ -1,23 +1,12 @@
 import { fError, fMsg } from "../utils/libby.js";
 import User from "../models/user.model.js";
+export const categories = ["Work", "Personal", "Home", "Study", "Finance", "Health", "Social", "Travel", "Projects", "Errands"];
 
 export const getCategories = async (req, res) => {
   try {
     const user = await User.findById(req.user);
-    const categories = [
-      "Work",
-      "Personal",
-      "Home",
-      "Study",
-      "Finance",
-      "Health",
-      "Social",
-      "Travel",
-      "Projects",
-      "Errands",
-      ...user.newCategoriesCreated,
-    ];
-    fMsg(res, "Categories fetched successfully", categories, 200);
+    const allCategories = [...categories, ...user.newCategoriesCreated];
+    fMsg(res, "Categories fetched successfully", allCategories, 200);
   } catch (error) {
     fError(res, "Internal server error", 500);
   }

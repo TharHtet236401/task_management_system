@@ -40,3 +40,11 @@ export const idSchema = Joi.object({
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),
 });
+
+export const categorySchema = Joi.object({
+  category: Joi.string().required().messages({
+    "string.empty": "Category is required",
+    "any.required": "Category is required",
+  }),
+});
+
