@@ -1,6 +1,6 @@
 import { fError, fMsg } from "../utils/libby.js";
 import User from "../models/user.model.js";
-export const categories = ["Work", "Personal", "Home", "Study", "Finance", "Health", "Social", "Travel", "Projects", "Errands"];
+export const categories = ["work", "personal", "home", "study", "finance", "health", "social", "travel", "projects", "errands"]
 
 export const getCategories = async (req, res) => {
   try {
@@ -34,9 +34,9 @@ export const createCategory = async (req, res) => {
     if(category.length > 20) {
       return fError(res, "Category must be less than 20 characters", 400);
     }
+    const lowerCaseCategory = category.toLowerCase();
 
-
-    user.newCategoriesCreated.push(category);
+    user.newCategoriesCreated.push(lowerCaseCategory);
     await user.save();
     fMsg(res, "Category created successfully", category, 200);
   } catch (error) {

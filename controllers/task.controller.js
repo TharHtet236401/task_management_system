@@ -141,3 +141,35 @@ export const deleteTask = async (req, res) => {
     return fError(res, error.message, 500);
   }
 };
+
+export const filterTasks = async (req, res) => {
+  try {
+    const { status, priority, category } = req.query;
+
+    // Build filter object based on provided query parameters
+    const filter = { user_id: req.user };
+
+    // Add filters only if they exist and are non-empty
+    if (status && status.trim()) {
+      filter.status = status.trim();
+    }
+
+    if (priority && priority.trim()) {
+      filter.priority = priority.trim();
+    }
+
+    if (category && category.trim()) {
+      filter.category = category.trim();
+    }
+
+    const tasks = await Task.find(filter);
+
+    if (!tasks.length) {
+      return fMsg(res, "No tasks found matching the filters", [], 200);
+    }
+
+    return fMsg(res, "Tasks retrieved successfully", tasks, 200);
+  } catch (error) {
+    return fError(res, error.message, 500);
+  }
+};
