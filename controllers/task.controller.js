@@ -177,8 +177,17 @@ export const deleteTask = async (req, res) => {
 export const filterTasks = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const { status, priority, category, createdAt ="desc", deadline_sort } = req.query;
-    const deadline ="";
+    if (!page) {
+      return fError(res, "Page is required", 400);
+    }
+    const {
+      status,
+      priority,
+      category,
+      createdAt = "desc",
+      deadline_sort,
+    } = req.query;
+
     const limit = 10;
     const skip = (page - 1) * limit;
 
@@ -198,16 +207,15 @@ export const filterTasks = async (req, res) => {
       filter.category = category.trim();
     }
 
-
     // Build sort object
     let sort = {};
-    if (deadline_sort === 'asc') {
+    if (deadline_sort === "asc") {
       sort.deadline = 1;
-    } else if (deadline_sort === 'desc') {
+    } else if (deadline_sort === "desc") {
       sort.deadline = -1;
     } else {
       // Default sort by created_at descending
-      if (createdAt === 'asc') {
+      if (createdAt === "asc") {
         sort.createdAt = 1;
       } else {
         sort.createdAt = -1;
@@ -215,10 +223,7 @@ export const filterTasks = async (req, res) => {
     }
     // console.log(filter);
     // console.log(sort);
-    const tasks = await Task.find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit);
+    const tasks = await Task.find(filter).sort(sort).skip(skip).limit(limit);
     const totalTasks = await Task.countDocuments(filter);
     const totalPages = Math.ceil(totalTasks / limit);
     if (!tasks.length) {
