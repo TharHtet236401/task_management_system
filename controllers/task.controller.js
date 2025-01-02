@@ -58,7 +58,7 @@ export const getTasks = async (req, res) => {
     const tasks = await Task.find({ user_id: currentUser._id })
       .skip(skip)
       .limit(limit)
-      .sort({ created_at: -1 }) // Show newest tasks first
+      .sort({ createdAt: -1 }) // Show newest tasks first (-1 for descending order)
       .select("-__v"); // Exclude version field
 
     return fMsg(
@@ -72,6 +72,7 @@ export const getTasks = async (req, res) => {
           currentPageTasks: tasks.length,
           totalTasks,
           hasMore: page < totalPages,
+          sortedBy: "latest",
         },
       },
       200
@@ -175,7 +176,9 @@ export const deleteTask = async (req, res) => {
 
 export const filterTasks = async (req, res) => {
   try {
-    const { status, priority, category, page = 1 } = req.query;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const { status, priority, category, createdAt ="desc", deadline_sort } = req.query;
+    const deadline ="";
     const limit = 10;
     const skip = (page - 1) * limit;
 
@@ -195,8 +198,25 @@ export const filterTasks = async (req, res) => {
       filter.category = category.trim();
     }
 
+
+    // Build sort object
+    let sort = {};
+    if (deadline_sort === 'asc') {
+      sort.deadline = 1;
+    } else if (deadline_sort === 'desc') {
+      sort.deadline = -1;
+    } else {
+      // Default sort by created_at descending
+      if (createdAt === 'asc') {
+        sort.createdAt = 1;
+      } else {
+        sort.createdAt = -1;
+      }
+    }
+    // console.log(filter);
+    // console.log(sort);
     const tasks = await Task.find(filter)
-      .sort({ created_at: -1 })
+      .sort(sort)
       .skip(skip)
       .limit(limit);
     const totalTasks = await Task.countDocuments(filter);
