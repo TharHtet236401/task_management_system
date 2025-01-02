@@ -39,14 +39,45 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ _id: { $eq: req.user } });
+    // Validate and parse page number
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // Validate user exists
+    const currentUser = await User.findOne({ _id: req.user });
     if (!currentUser) {
       return fError(res, "User not found", 404);
     }
-    const tasks = await Task.find({ user_id: currentUser._id });
-    return fMsg(res, "Tasks fetched successfully", tasks, 200);
+
+    // Get total count for accurate pagination
+    const totalTasks = await Task.countDocuments({ user_id: currentUser._id });
+    const totalPages = Math.ceil(totalTasks / limit);
+
+    // Get paginated tasks
+    const tasks = await Task.find({ user_id: currentUser._id })
+      .skip(skip)
+      .limit(limit)
+      .sort({ created_at: -1 }) // Show newest tasks first
+      .select("-__v"); // Exclude version field
+
+    return fMsg(
+      res,
+      "Tasks fetched successfully",
+      {
+        tasks,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          currentPageTasks: tasks.length,
+          totalTasks,
+          hasMore: page < totalPages,
+        },
+      },
+      200
+    );
   } catch (error) {
-    return fError(res, error.message, 500);
+    return fError(res, "Failed to fetch tasks", 500);
   }
 };
 
@@ -144,7 +175,9 @@ export const deleteTask = async (req, res) => {
 
 export const filterTasks = async (req, res) => {
   try {
-    const { status, priority, category } = req.query;
+    const { status, priority, category, page = 1 } = req.query;
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
     // Build filter object based on provided query parameters
     const filter = { user_id: req.user };
@@ -162,13 +195,31 @@ export const filterTasks = async (req, res) => {
       filter.category = category.trim();
     }
 
-    const tasks = await Task.find(filter);
-
+    const tasks = await Task.find(filter)
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit);
+    const totalTasks = await Task.countDocuments(filter);
+    const totalPages = Math.ceil(totalTasks / limit);
     if (!tasks.length) {
       return fMsg(res, "No tasks found matching the filters", [], 200);
     }
 
-    return fMsg(res, "Tasks retrieved successfully", tasks, 200);
+    return fMsg(
+      res,
+      "Tasks retrieved successfully",
+      {
+        tasks,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalTasks,
+          currentPageTasks: tasks.length,
+          hasMore: page < totalPages,
+        },
+      },
+      200
+    );
   } catch (error) {
     return fError(res, error.message, 500);
   }
